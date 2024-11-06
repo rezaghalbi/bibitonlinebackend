@@ -8,7 +8,7 @@ exports.getAllCustomers = async (req, res) => {
     const customers = await Customer.findAll();
     res.status(200).json(customers);
   } catch (error) {
-    console.error('Error getting customers:', error); // Logging error
+    console.error('Error getting customers:', error);
     res.status(500).json({ message: 'Terjadi kesalahan pada server', error });
   }
 };
@@ -21,7 +21,7 @@ exports.getCustomerById = async (req, res) => {
       return res.status(404).json({ message: 'Customer tidak ditemukan' });
     res.status(200).json(customer);
   } catch (error) {
-    console.error('Error getting customer by ID:', error); // Logging error
+    console.error('Error getting customer by ID:', error);
     res.status(500).json({ message: 'Terjadi kesalahan pada server', error });
   }
 };
@@ -31,13 +31,21 @@ exports.registerCustomer = async (req, res) => {
   try {
     const { name, email, password, phone, address } = req.body;
 
+    // Validasi input
+    if (!name || !email || !password || !phone || !address) {
+      return res.status(400).json({ message: 'Semua field wajib diisi' });
+    }
+
     // Cek apakah email sudah terdaftar
     const existingCustomer = await Customer.findOne({ where: { email } });
-    if (existingCustomer)
+    if (existingCustomer) {
       return res.status(400).json({ message: 'Email sudah terdaftar' });
+    }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Buat customer baru
     const newCustomer = await Customer.create({
       name,
       email,
@@ -46,9 +54,11 @@ exports.registerCustomer = async (req, res) => {
       address,
     });
 
-    res.status(201).json(newCustomer);
+    res
+      .status(201)
+      .json({ message: 'Customer berhasil didaftarkan', newCustomer });
   } catch (error) {
-    console.error('Error registering customer:', error); // Logging error
+    console.error('Error registering customer:', error);
     res.status(500).json({ message: 'Terjadi kesalahan pada server', error });
   }
 };
@@ -58,15 +68,24 @@ exports.loginCustomer = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validasi input
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: 'Email dan password wajib diisi' });
+    }
+
     // Cari customer berdasarkan email
     const customer = await Customer.findOne({ where: { email } });
-    if (!customer)
+    if (!customer) {
       return res.status(404).json({ message: 'Customer tidak ditemukan' });
+    }
 
     // Cek password
     const isPasswordValid = await bcrypt.compare(password, customer.password);
-    if (!isPasswordValid)
+    if (!isPasswordValid) {
       return res.status(401).json({ message: 'Password salah' });
+    }
 
     // Generate token
     const token = jwt.sign(
@@ -77,7 +96,7 @@ exports.loginCustomer = async (req, res) => {
 
     res.status(200).json({ message: 'Login berhasil', token, customer });
   } catch (error) {
-    console.error('Error logging in customer:', error); // Logging error
+    console.error('Error logging in customer:', error);
     res.status(500).json({ message: 'Terjadi kesalahan pada server', error });
   }
 };
@@ -102,12 +121,13 @@ exports.updateCustomer = async (req, res) => {
 
     // Update customer
     const [updatedRows] = await Customer.update(updateData, { where: { id } });
-    if (updatedRows === 0)
+    if (updatedRows === 0) {
       return res.status(404).json({ message: 'Customer tidak ditemukan' });
+    }
 
     res.status(200).json({ message: 'Customer berhasil diperbarui' });
   } catch (error) {
-    console.error('Error updating customer:', error); // Logging error
+    console.error('Error updating customer:', error);
     res.status(500).json({ message: 'Terjadi kesalahan pada server', error });
   }
 };
@@ -117,12 +137,13 @@ exports.deleteCustomer = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedRows = await Customer.destroy({ where: { id } });
-    if (deletedRows === 0)
+    if (deletedRows === 0) {
       return res.status(404).json({ message: 'Customer tidak ditemukan' });
+    }
 
     res.status(200).json({ message: 'Customer berhasil dihapus' });
   } catch (error) {
-    console.error('Error deleting customer:', error); // Logging error
+    console.error('Error deleting customer:', error);
     res.status(500).json({ message: 'Terjadi kesalahan pada server', error });
   }
 };

@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const db = require('../config/db'); // Pastikan path ke config database benar
+const db = require('../config/db');
 
 const Customer = db.define(
   'Customer',
@@ -8,6 +8,10 @@ const Customer = db.define(
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     email: {
       type: DataTypes.STRING,
@@ -18,9 +22,17 @@ const Customer = db.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   },
   {
-    tableName: 'customers', // Pastikan sesuai dengan nama tabel di database
+    tableName: 'customers',
   }
 );
 
